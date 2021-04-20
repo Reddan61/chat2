@@ -6,6 +6,7 @@ import MainPage from "./Components/MainPage/MainPage"
 import {Redirect, Route, Switch} from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {isLoginnedThunk} from "./Components/Redux/Reducers/authReducer"
+import OpenNotification from './Components/openNotification/OpenNotification';
 
 
 
@@ -24,7 +25,7 @@ const App = () => {
 
     return <React.Fragment>
             <Switch>
-                <Route path = "/auth" render={() => <Auth />}/>
+                <Route path = "/auth" render={() =>  <OpenNotification><Auth /></OpenNotification>}/>
                 <Route path = "/mainPage" render={() => <MainPage />}/>
 
                 <Route render={() => <Redirect to={'/auth'}/>}/>

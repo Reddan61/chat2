@@ -3,7 +3,8 @@ import {authApi} from "../../API/API"
 
 const registration = "REGISTRATION";
 const login = "LOGIN";
-const isLoginned = "ISLOGINNED"
+const isLoginned = "ISLOGINNED";
+
 
 const initialState = {
     token:null as string | null,
@@ -13,6 +14,7 @@ const initialState = {
     id:null as string | null,
     isAuth:false
 }
+
 type initialStateType = typeof initialState;
 type actionType = ActionsTypes<typeof authReducerActions>
 
@@ -54,34 +56,23 @@ const authReducerActions = {
 
 
 
-export const registrationThunk = (data: registrationFormDataType): ThunkActionType<actionType> => {
+export const registrationThunk = (data: registrationResponseDataType): ThunkActionType<actionType> => {
     return async (dispatch) => {
         try {
-            let response = await authApi.registration(data);
-            if(response.status === 'success') {
-                dispatch(authReducerActions.registrationAC(response.data))
-            } else {
-                console.log('error');
-            }
-        }
+             dispatch(authReducerActions.registrationAC(data))
+        } 
         catch(e) {
-            console.log(e);
-            return
+            return ;
         }
     }
 };
 
 
-export const loginThunk = (data:loginFormDataType): ThunkActionType<actionType> => {
+export const loginThunk = (data:loginResponseDataType): ThunkActionType<actionType> => {
     return async (dispatch) => {
         try {
-            let response = await authApi.login(data);
-            if(response.status === 'success') {
-                dispatch(authReducerActions.loginAC(response.data))
-            } else {
-                console.log('error');
-            }
-        }
+             dispatch(authReducerActions.loginAC(data))
+        } 
         catch(e) {
             console.log(e);
             return

@@ -1,10 +1,13 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, makeStyles} from "@material-ui/core";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { renderTextField } from "../ReduxForm/Fields/Fields";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { registrationThunk, loginThunk, registrationFormDataType, loginFormDataType } from "../Redux/Reducers/authReducer"
 import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
+import { StateType } from "../Redux/store";
+import { authApi } from "../API/API";
+import OpenNotification from "../openNotification/OpenNotification";
 
 const useStyle = makeStyles({
     root: {
@@ -20,13 +23,14 @@ const useStyle = makeStyles({
     }
 });
 
-
-const Auth = () => {
+type authPropsType = {
+    openNotificationWithSettings?:(bool:boolean,msg:string,sev:"success" | "error") => void
+}
+const Auth:React.FC<authPropsType> = (props) => {
     const classes = useStyle();
 
     const [isOpenedAuth, ChangeOpenAuth] = useState(false);
     const [isOpenedReg, ChangeOpenReg] = useState(false);
-
 
 
     function OpenAuth() {
@@ -38,8 +42,6 @@ const Auth = () => {
     }
 
 
-
-
     return <React.Fragment>
         <Box className={classes.root}>
             {/*Авторизация*/}
@@ -47,7 +49,7 @@ const Auth = () => {
                 <DialogTitle>Sign in</DialogTitle>
                 <DialogContent>
                     {/* onSubmit={loginSubmit} */}
-                    <LoginForm OpenAuth={OpenAuth} />
+                    <LoginForm OpenAuth={OpenAuth} openNotificationWithSettings = {props.openNotificationWithSettings!}/>
                 </DialogContent>
             </Dialog>
 
@@ -55,7 +57,7 @@ const Auth = () => {
             <Dialog open={isOpenedReg}>
                 <DialogTitle>Sign up</DialogTitle>
                 <DialogContent>
-                    <RegistrationForm OpenReg={OpenReg} />
+                    <RegistrationForm OpenReg={OpenReg} openNotificationWithSettings = {props.openNotificationWithSettings!} />
                 </DialogContent>
             </Dialog>
             <Button onClick={OpenAuth} className={classes.button}>Sign in</Button>
@@ -63,17 +65,25 @@ const Auth = () => {
         </Box>
     </React.Fragment>
 };
+type registrationFormPropsType = {
+    OpenReg: () => void,
+    openNotificationWithSettings:(bool:boolean,msg:string,sev:"success" | "error") => void
+}
 
-
-const RegistrationForm:React.FC<{ OpenReg: () => void }> = (props) => {
+const RegistrationForm:React.FC<registrationFormPropsType> = (props) => {
     const dispatch = useDispatch();
-
-    const submit = (values: registrationFormDataType, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
-        if (values.password2 === values.password) {
-            dispatch(registrationThunk(values));
+    const {openNotificationWithSettings} = props;
+    
+    const submit = async (values: registrationFormDataType, { setSubmitting}: {setSubmitting: (isSubmitting: boolean) => void }) => {
+        let response = await authApi.registration(values);
+        if(response.status === "success") {
+            dispatch(registrationThunk(response.data))
+            openNotificationWithSettings(true,"Success","success");
             props.OpenReg();
-            setSubmitting(false);
-        }
+        } else {
+            openNotificationWithSettings(true,"Error","error");
+            setSubmitting(false)
+        } 
     }
 
 
@@ -128,14 +138,24 @@ const RegistrationForm:React.FC<{ OpenReg: () => void }> = (props) => {
     </Formik>
 };
 
+type loginFormPropsType = {
+    OpenAuth: () => void,
+    openNotificationWithSettings:(bool:boolean,msg:string,sev:"success" | "error") => void
+}
 
-const LoginForm: React.FC<{ OpenAuth: () => void }> = (props) => {
+const LoginForm: React.FC<loginFormPropsType> = (props) => {
     const dispatch = useDispatch();
+    const {openNotificationWithSettings} = props;
 
-    const submit = (values: loginFormDataType, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
-        dispatch(loginThunk(values));
-        props.OpenAuth();
-        setSubmitting(false);
+    const submit = async (values: loginFormDataType, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
+        let response = await authApi.login(values);
+        if(response.status === "success") {
+            dispatch(loginThunk(response.data));
+            props.OpenAuth();
+        } else {
+            openNotificationWithSettings(true,"Error","error");
+            setSubmitting(false)
+        } 
     }
     return <>
         <Formik
