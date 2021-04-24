@@ -12,7 +12,8 @@ const initialState = {
     username:null as string | null,
     confirmed:false,
     id:null as string | null,
-    isAuth:false
+    isAuth:false,
+    avatarURL: null as string | null
 }
 
 type initialStateType = typeof initialState;

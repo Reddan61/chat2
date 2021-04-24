@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import { StateType } from "../Redux/store";
 import { authApi } from "../API/API";
 import OpenNotification from "../openNotification/OpenNotification";
+import { Redirect } from "react-router";
 
 const useStyle = makeStyles({
     root: {
@@ -27,6 +28,8 @@ type authPropsType = {
     openNotificationWithSettings?:(bool:boolean,msg:string,sev:"success" | "error") => void
 }
 const Auth:React.FC<authPropsType> = (props) => {
+    const {isAuth} = useSelector((state:StateType) => state.AuthPage);
+
     const classes = useStyle();
 
     const [isOpenedAuth, ChangeOpenAuth] = useState(false);
@@ -40,7 +43,9 @@ const Auth:React.FC<authPropsType> = (props) => {
     function OpenReg() {
         ChangeOpenReg(!isOpenedReg);
     }
-
+    if(isAuth) {
+        return <Redirect to = {'/mainPage'} />
+    }
 
     return <React.Fragment>
         <Box className={classes.root}>
