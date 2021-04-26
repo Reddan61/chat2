@@ -4,7 +4,7 @@ const {validationResult} = require("express-validator");
 const jwt = require("jsonwebtoken");
 const {UserModel} = require("../models/UserModel");
 const {generateMD5} = require("../utils/generateHash");
-
+const {deleteFile} = require("../utils/deleteFile")
 
 class UserController {
     async index(req, res) {
@@ -25,27 +25,34 @@ class UserController {
     }
 
     async show(req,res){
-        const userId = req.params.id;
-        if(!mongoose.Types.ObjectId.isValid(userId)) {
-            res.status(400).send();
-            return
-        }
-    
-        const user = await UserModel.findById(userId);
-
-        if(!user) {
-            res.status(404).json({
-                status:"error",
-                message:"User isn't found"
-            })
-            return
-        } else {
-            res.json({
-                status:"success",
-                data:user
-            })
-        }
+        try {
+            const userId = req.params.id;
+            if(!mongoose.Types.ObjectId.isValid(userId)) {
+                res.status(400).send();
+                return
+            }
         
+            const user = await UserModel.findById(userId);
+    
+            if(!user) {
+                res.status(404).json({
+                    status:"error",
+                    message:"User isn't found"
+                })
+                return
+            } else {
+                res.json({
+                    status:"success",
+                    data:user
+                })
+            }
+        }
+        catch(e) {
+            res.status(500).json({
+                status: 'error',
+                message: JSON.stringify(e)
+            })
+        }    
     }
 
     async create(req, res) {
@@ -132,7 +139,7 @@ class UserController {
     async afterLogin(req,res) {
         try {
             const user = req.user? req.user.toJSON() : undefined;
-
+            console.log(req.user)
             res.json({
                 status:"success",
                 data: {
@@ -170,6 +177,48 @@ class UserController {
         }
     }
 
+    async updateUser(req,res) {
+        try {
+            const userId = req.user._id;
+            if(!mongoose.Types.ObjectId.isValid(userId)) {
+                res.status(400).send();
+                return
+            }
+            let update = {}
+            if(req.file) {
+                update.avatar = req.file.path
+                const user = await UserModel.findById(userId);
+                await deleteFile(user.avatar);
+            }
+           
+            const user = await UserModel.findOneAndUpdate({
+                _id:userId
+            },
+            {
+                $set:update
+            }, {new:true, useFindAndModify:false});
+
+            if(!user) {
+                res.status(404).json({
+                    status:"error",
+                    message:"User isn't found"
+                })
+                return
+            } else {
+                res.json({
+                    status:"success",
+                    data:user
+                })
+            }
+        }
+        catch(e) {
+            res.status(500).json({
+                status: 'error',
+                message: JSON.stringify(e)
+            })
+        }
+
+    }
 }
 
 

@@ -9,6 +9,8 @@ import {isLoginnedThunk} from "./Components/Redux/Reducers/authReducer"
 import OpenNotification from './Components/openNotification/OpenNotification';
 import { compose } from 'redux';
 import Profile from './Components/Profile/Profile';
+import Friends from './Components/Friends/Friends';
+import Messages from './Components/Messages/Messages';
 
 
 
@@ -25,6 +27,8 @@ const App = () => {
             <Switch>
                 <Route path = "/auth" exact render={() =>  <OpenNotification><Auth /></OpenNotification>}/>
                 <Route path = "/profile" exact render={() => <Profile />}/>
+                <Route path = "/friends" exact render={() => <Friends />}/>
+                <Route path = "/messages" exact render={() => <Messages />}/>
 
                 <Route render={() => <Redirect to={'/profile'}/>}/>
             </Switch>

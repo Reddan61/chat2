@@ -1,26 +1,37 @@
-import { AppBar, Button, IconButton, makeStyles, Menu, Toolbar, Typography } from "@material-ui/core";
-import React from "react"
+import { AppBar, IconButton, makeStyles, Menu, Toolbar, Typography } from "@material-ui/core";
+import React, { useEffect, useState } from "react"
 import { WithAuth } from "../HOC/withAuth"
 import MenuIcon from '@material-ui/icons/Menu';
 import { MenuItem } from "@material-ui/core";
+import { compose } from "redux";
+import { useHistory } from "react-router";
 
 const Header = () => {
 const classes = useStyles();
 const [anchorEl, setAnchorEl] = React.useState(null);
+const [title, setTitle] = useState<null | string>(null);
+const history = useHistory();
+
+useEffect(() => {
+    const title = history.location.pathname[1].toUpperCase() + history.location.pathname.slice(2);
+    setTitle(title);
+});
+
 
 const handleClick = (event:any) => {
     setAnchorEl(event.currentTarget);
 };
 
-const handleClose = () => {
+const handleClose = (e:any,path:string) => {
+    history.push(path);
     setAnchorEl(null);
 };
 
 return <React.Fragment>
     <AppBar position="static">
         <Toolbar>
-            <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                <MenuIcon onClick = {handleClick}/>
+            <IconButton onClick = {handleClick} edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                <MenuIcon/>
             </IconButton>
             <Menu
                 id="simple-menu"
@@ -30,13 +41,13 @@ return <React.Fragment>
                 onClose={handleClose}
                 className = {classes.menu}
             >
-                <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>Friends</MenuItem>
-                <MenuItem onClick={handleClose}>Messages</MenuItem>
-                <MenuItem onClick={handleClose}>Logout</MenuItem>
+                <MenuItem onClick={(e) => handleClose(e,"profile")}>Profile</MenuItem>
+                <MenuItem onClick={(e) => handleClose(e,"friends")}>Friends</MenuItem>
+                <MenuItem onClick={(e) => handleClose(e,"messages")}>Messages</MenuItem>
+                <MenuItem onClick={() => {}}>Logout</MenuItem>
             </Menu>
             <Typography variant="h6" className={classes.title}>
-               Profile
+               {title}
             </Typography>
         </Toolbar>
     </AppBar>

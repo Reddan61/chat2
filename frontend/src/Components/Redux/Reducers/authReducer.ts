@@ -4,6 +4,7 @@ import {authApi} from "../../API/API"
 const registration = "REGISTRATION";
 const login = "LOGIN";
 const isLoginned = "ISLOGINNED";
+const updateUser = "UPDATEUSER";
 
 
 const initialState = {
@@ -30,6 +31,7 @@ const AuthReducer = (state = initialState,action:actionType): initialStateType =
                 id:action.data._id,
                 username:action.data.username,
                 token:action.data.token,
+                avatarURL: action.data.avatar,
                 isAuth:true
             }
         case isLoginned:
@@ -39,7 +41,16 @@ const AuthReducer = (state = initialState,action:actionType): initialStateType =
                 email:action.data.email,
                 isAuth:true,
                 id:action.data._id,
+                avatarURL: action.data.avatar,
                 token:localStorage.getItem('token')
+            }
+        case 'UPDATEUSER':
+            return {...state,
+                confirmed: action.data.confirmed,
+                email: action.data.email,
+                username: action.data.username,
+                id:action.data._id,
+                avatarURL: action.data.avatar
             }
         default:
             return state
@@ -49,10 +60,12 @@ const AuthReducer = (state = initialState,action:actionType): initialStateType =
 export default AuthReducer;
 
 
+
 const authReducerActions = {
     registrationAC: (data:registrationResponseDataType) => ({type:registration,data}) as const,
     loginAC: (data:loginResponseDataType) => ({type:login,data}) as const,
-    me:(data:registrationResponseDataType) => ({type:isLoginned,data}) as const
+    me:(data:registrationResponseDataType) => ({type:isLoginned,data}) as const,
+    updateUserAC:(data:updateUserType) => ({type:updateUser,data}) as const,
 }
 
 
@@ -100,7 +113,33 @@ export const isLoginnedThunk = (): ThunkActionType<actionType> => {
     }
 }
 
+export const updateUserThunk = (data:any): ThunkActionType<actionType> => {
+    return async (dispatch)  => {
+        try {
+            const token = localStorage.getItem('token')
+            if(token) { 
+                let response = await authApi.updateUser(token,data);
+                dispatch(authReducerActions.updateUserAC(response.data));
+            } else {
+                return
+            }
+           
+        }
+        catch(e) {
+            console.log(e);
+            return    
+        }
+    }
+};
 
+
+export type updateUserType = {
+    confirmed: boolean,
+    email:string,
+    username:string,
+    _id:string,
+    avatar : string
+}
 
 export type registrationFormDataType = {
     username:string,
@@ -117,7 +156,8 @@ export type registrationResponseDataType = {
     confirmed: boolean,
     email:string,
     username:string
-    _id:string
+    _id:string,
+    avatar:string
 }
 
 export type loginResponseDataType = {
@@ -125,5 +165,6 @@ export type loginResponseDataType = {
     email:string,
     token:string,
     username:string
-    _id:string
+    _id:string,
+    avatar:string
 }

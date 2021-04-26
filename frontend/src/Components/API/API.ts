@@ -35,5 +35,11 @@ export const authApi = {
         .then((response) => {
             return response.data
         })
+    },
+    updateUser: (token:string,data:any) => {
+        return instance.put('/users',data,{headers:{'token': token}})
+        .then((response) => {
+            return response.data
+        })
     }
 };

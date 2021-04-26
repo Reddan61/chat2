@@ -1,5 +1,5 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, makeStyles} from "@material-ui/core";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { renderTextField } from "../ReduxForm/Fields/Fields";
 import { useDispatch, useSelector } from "react-redux";
 import { registrationThunk, loginThunk, registrationFormDataType, loginFormDataType } from "../Redux/Reducers/authReducer"
@@ -7,7 +7,6 @@ import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { StateType } from "../Redux/store";
 import { authApi } from "../API/API";
-import OpenNotification from "../openNotification/OpenNotification";
 import { Redirect } from "react-router";
 
 const useStyle = makeStyles({
@@ -156,7 +155,6 @@ const LoginForm: React.FC<loginFormPropsType> = (props) => {
         let response = await authApi.login(values);
         if(response.status === "success") {
             dispatch(loginThunk(response.data));
-            props.OpenAuth();
         } else {
             openNotificationWithSettings(true,"Error","error");
             setSubmitting(false)

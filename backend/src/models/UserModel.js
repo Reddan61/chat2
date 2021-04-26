@@ -23,6 +23,10 @@ const UserSchema = new Schema({
     confirmHash: {
         required: true,
         type:String,
+    },
+    avatar : {
+        type:String,
+        default:""
     }
 
 });

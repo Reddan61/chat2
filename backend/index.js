@@ -8,7 +8,7 @@ const {registerValidations} = require('./src/validations/register');
 const {UserCtrl} = require("./src/controllers/UserController");
 const {passport} = require("./src/core/passport")
 const cors = require('cors');
-
+const multer = require('./src/core/multer')
 const app = express();
 
 let corsOptions = {
@@ -20,7 +20,7 @@ let corsOptions = {
 app.use(express.json());
 app.use(cors(corsOptions))
 app.use(passport.initialize());
-
+app.use('/uploads',express.static('uploads'))
 
 app.get('/users',UserCtrl.index);
 app.post('/auth/register',registerValidations,UserCtrl.create);
@@ -28,7 +28,7 @@ app.get('/auth/verify',UserCtrl.verify);
 app.get('/users/me',passport.authenticate('jwt',{session:false}),UserCtrl.getUserInfo);
 app.get('/users/:id',UserCtrl.show);
 app.post('/auth/login',passport.authenticate('local'),UserCtrl.afterLogin)
-
+app.put('/users',passport.authenticate('jwt',{session:false}),multer.single('file'),UserCtrl.updateUser)
 
 app.listen(process.env.PORT || 8888,(err) => {
     if(err) {
