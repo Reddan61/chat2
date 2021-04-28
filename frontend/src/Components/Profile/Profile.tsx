@@ -2,7 +2,7 @@ import { Avatar, Box, Container } from "@material-ui/core"
 import React from "react"
 import { useDispatch, useSelector } from "react-redux";
 import { WithAuth } from "../HOC/withAuth";
-import { updateUserThunk } from "../Redux/Reducers/authReducer";
+import { updateAvatarThunk } from "../Redux/Reducers/authReducer";
 import { StateType } from "../Redux/store";
 
 
@@ -14,7 +14,7 @@ const Profile = () => {
         if(e.target.files.length && (file.type === 'image/jpeg' || file.type === 'image/png' || file.mimetype === 'image/jpg')) {
             const data = new FormData();
             data.append("file",file)
-            dispatch(updateUserThunk(data));
+            dispatch(updateAvatarThunk(data));
         }
     }
     return <React.Fragment>

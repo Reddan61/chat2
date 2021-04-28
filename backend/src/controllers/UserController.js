@@ -32,7 +32,7 @@ class UserController {
                 return
             }
         
-            const user = await UserModel.findById(userId);
+            const user = await UserModel.findById(userId).exec();
     
             if(!user) {
                 res.status(404).json({
@@ -139,7 +139,6 @@ class UserController {
     async afterLogin(req,res) {
         try {
             const user = req.user? req.user.toJSON() : undefined;
-            console.log(req.user)
             res.json({
                 status:"success",
                 data: {
@@ -177,7 +176,7 @@ class UserController {
         }
     }
 
-    async updateUser(req,res) {
+    async updateAvatar(req,res) {
         try {
             const userId = req.user._id;
             if(!mongoose.Types.ObjectId.isValid(userId)) {
@@ -218,6 +217,109 @@ class UserController {
             })
         }
 
+    }
+
+
+    async fargotPassword(req,res) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                res.status(400).json({status: "error", errors: errors.array()});
+                return;
+            }
+
+            const {email} = req.body;
+
+            const user = await UserModel.findOne({email}).exec();
+
+            if(!user) {
+                res.status(404).json({
+                    status:"error",
+                    message:"User isn't found"
+                })
+                return
+            }
+            else if(!user.confirmed) {
+                res.status(401).json({
+                    status:"error",
+                    message:"Email isn't confirmed"
+                })
+                return
+            }
+            const token = jwt.sign({_id:user._id},process.env.RESET_PASSWORD_KEY,{expiresIn:'20m'});
+
+            await user.updateOne({resetPassword:token}).exec();
+               
+            sendEmail({
+                emailFrom: 'admin@chat.ru',
+                emailTo: user.email,
+                subject: "Reset password Chat",
+                html: `Please reset your password by clicking this
+            <a href="${process.env.CLIENT_URL}/resetpassword/${token}">link</a>`
+            },(err) => {
+                if(err) {
+                    res.status(500).json({
+                        status:"error",
+                        message: JSON.stringify(err)
+                    })
+                } else {
+                    res.status(201).json({
+                        status: "success",
+                        data: {
+                            message:'Email has been sent'
+                        }
+                    });
+                }
+            })
+        }
+        catch(e) {
+            res.status(500).json({
+                status: 'error',
+                message: e
+            })
+        }
+        
+    }
+
+    async resetPassword(req,res) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                res.status(400).json({status: "error", errors: errors.array()});
+                return;
+            }
+    
+            const {resetToken, password} = req.body;
+    
+            if(!resetToken){
+                return res.status(401).json({status:"error",message:"Unauthorized"})
+            }
+    
+            jwt.verify(resetToken,process.env.RESET_PASSWORD_KEY);
+    
+            const user = await UserModel.findOne({resetPassword:resetToken}).exec();
+    
+            if(!user) {
+                return res.status(404).json({
+                    status:"error",
+                    message:"User isn't found"
+                })
+            }
+            await user.updateOne({password:generateMD5(password + process.env.SECRET_KEY),resetPassword:""});
+    
+            res.status(201).json({
+                status:"success",
+                data: {
+                    message:'Password has been changed'
+                }
+            })
+        }
+        catch(e) {
+            res.status(500).json({
+                status: 'error',
+                message: e
+            })
+        }
     }
 }
 

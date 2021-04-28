@@ -34,12 +34,17 @@ export const authApi = {
         return instance.get<{status:"success" | "error", data:loginResponseDataType}>('/users/me',{headers:{'token':token}})
         .then((response) => {
             return response.data
-        })
+        }).catch((e) => {
+            console.log(e.response)
+            return e.response
+        }) 
     },
-    updateUser: (token:string,data:any) => {
-        return instance.put('/users',data,{headers:{'token': token}})
+    updateAvatar: (token:string,data:any) => {
+        return instance.put('/usersAvatar',data,{headers:{'token': token}})
         .then((response) => {
             return response.data
+        }).catch((e) => {
+            return e.response
         })
     }
 };

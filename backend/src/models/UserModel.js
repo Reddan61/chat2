@@ -27,6 +27,10 @@ const UserSchema = new Schema({
     avatar : {
         type:String,
         default:""
+    },
+    resetPassword: {
+        type:String,
+        default:""
     }
 
 });
@@ -36,6 +40,7 @@ UserSchema.set("toJSON", {
     transform: function(_,obj) {
         delete obj.password;
         delete obj.confirmHash;
+        delete obj.resetPassword;
         return obj;
     }
 })

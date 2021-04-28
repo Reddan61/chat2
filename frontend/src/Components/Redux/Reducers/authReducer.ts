@@ -1,10 +1,12 @@
 import { ActionsTypes, ThunkActionType } from './../store';
 import {authApi} from "../../API/API"
+import actions from 'redux-form/lib/actions';
 
 const registration = "REGISTRATION";
 const login = "LOGIN";
 const isLoginned = "ISLOGINNED";
-const updateUser = "UPDATEUSER";
+const updateAvatar = "UPDATEAVATAR";
+const logout = "LOGOUT";
 
 
 const initialState = {
@@ -44,14 +46,12 @@ const AuthReducer = (state = initialState,action:actionType): initialStateType =
                 avatarURL: action.data.avatar,
                 token:localStorage.getItem('token')
             }
-        case 'UPDATEUSER':
+        case 'UPDATEAVATAR':
             return {...state,
-                confirmed: action.data.confirmed,
-                email: action.data.email,
-                username: action.data.username,
-                id:action.data._id,
                 avatarURL: action.data.avatar
             }
+        case 'LOGOUT': 
+            return {...state,...initialState}
         default:
             return state
     }
@@ -65,7 +65,8 @@ const authReducerActions = {
     registrationAC: (data:registrationResponseDataType) => ({type:registration,data}) as const,
     loginAC: (data:loginResponseDataType) => ({type:login,data}) as const,
     me:(data:registrationResponseDataType) => ({type:isLoginned,data}) as const,
-    updateUserAC:(data:updateUserType) => ({type:updateUser,data}) as const,
+    updateAvatarAC:(data:updateUserType) => ({type:updateAvatar,data}) as const,
+    logoutAC:() => ({type:logout}) as const
 }
 
 
@@ -100,6 +101,10 @@ export const isLoginnedThunk = (): ThunkActionType<actionType> => {
         try {
             if(localStorage.getItem('token')) {
                 let response = await authApi.me(localStorage.getItem('token')!);
+                if(response.status === 401 && response.data === "Unauthorized" ) {
+                    dispatch(logOutThunk());
+                    return
+                }
                 dispatch(authReducerActions.me(response.data));
             } else {
                 return
@@ -113,13 +118,17 @@ export const isLoginnedThunk = (): ThunkActionType<actionType> => {
     }
 }
 
-export const updateUserThunk = (data:any): ThunkActionType<actionType> => {
+export const updateAvatarThunk = (data:any): ThunkActionType<actionType> => {
     return async (dispatch)  => {
         try {
             const token = localStorage.getItem('token')
             if(token) { 
-                let response = await authApi.updateUser(token,data);
-                dispatch(authReducerActions.updateUserAC(response.data));
+                let response = await authApi.updateAvatar(token,data);
+                if(response.status === 401 && response.data === "Unauthorized" ) {
+                    dispatch(logOutThunk());
+                    return
+                }
+                dispatch(authReducerActions.updateAvatarAC(response.data));
             } else {
                 return
             }
@@ -131,6 +140,19 @@ export const updateUserThunk = (data:any): ThunkActionType<actionType> => {
         }
     }
 };
+
+
+export const logOutThunk = (): ThunkActionType<actionType> => {
+    return async(dispatch) => {
+        try {
+            localStorage.removeItem('token');
+            dispatch(authReducerActions.logoutAC());
+        }catch(e) {
+            console.log(e);
+            return  
+        }
+    }
+}
 
 
 export type updateUserType = {

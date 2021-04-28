@@ -5,12 +5,15 @@ import MenuIcon from '@material-ui/icons/Menu';
 import { MenuItem } from "@material-ui/core";
 import { compose } from "redux";
 import { useHistory } from "react-router";
+import { useDispatch } from "react-redux";
+import { logOutThunk } from "../Redux/Reducers/authReducer";
 
 const Header = () => {
 const classes = useStyles();
 const [anchorEl, setAnchorEl] = React.useState(null);
 const [title, setTitle] = useState<null | string>(null);
 const history = useHistory();
+const dispatch = useDispatch();
 
 useEffect(() => {
     const title = history.location.pathname[1].toUpperCase() + history.location.pathname.slice(2);
@@ -44,7 +47,7 @@ return <React.Fragment>
                 <MenuItem onClick={(e) => handleClose(e,"profile")}>Profile</MenuItem>
                 <MenuItem onClick={(e) => handleClose(e,"friends")}>Friends</MenuItem>
                 <MenuItem onClick={(e) => handleClose(e,"messages")}>Messages</MenuItem>
-                <MenuItem onClick={() => {}}>Logout</MenuItem>
+                <MenuItem onClick={() => {dispatch(logOutThunk())}}>Logout</MenuItem>
             </Menu>
             <Typography variant="h6" className={classes.title}>
                {title}

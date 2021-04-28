@@ -10,7 +10,6 @@ const { generateMD5 } = require('../utils/generateHash');
 passport.use(new LocalStrategy(async (username,password,done) => {
     try{
         const user = await UserModel.findOne({$or: [{email:username}, {username}]}).exec()
-
         
         if(!user) {
             return done(null,false)

@@ -1,17 +1,11 @@
 const validator = require("express-validator");
 
+module.exports.fargotPasswordValidation = [validator.body('email', "Write E-Mail")
+    .isEmail()
+    .withMessage("Wrong E-Mail")];
 
-module.exports.registerValidations = [
-    validator.body('email', "Write E-Mail")
-        .isEmail()
-        .withMessage("Wrong E-Mail"),
-    validator.body("username", 'Write username')
-        .isString()
-        .isLength({
-            min:2,
-            max:20
-        })
-        .withMessage('Username length must match 2-20 characters'),
+
+module.exports.resetPasswordValidation = [
     validator.body('password', 'Write password')
         .isString()
         .isLength({
@@ -25,5 +19,4 @@ module.exports.registerValidations = [
                 return value;
             }
          })
-];
-
+]
