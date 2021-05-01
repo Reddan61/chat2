@@ -239,15 +239,15 @@ class UserController {
                 })
                 return
             }
-            else if(!user.confirmed) {
-                res.status(401).json({
+            if(!user.confirmed) {
+                res.status(406).json({
                     status:"error",
                     message:"Email isn't confirmed"
                 })
                 return
             }
             const token = jwt.sign({_id:user._id},process.env.RESET_PASSWORD_KEY,{expiresIn:'20m'});
-
+            
             await user.updateOne({resetPassword:token}).exec();
                
             sendEmail({
@@ -292,7 +292,7 @@ class UserController {
             const {resetToken, password} = req.body;
     
             if(!resetToken){
-                return res.status(401).json({status:"error",message:"Unauthorized"})
+                return res.status(400).json({status:"error",message:"Token not found"})
             }
     
             jwt.verify(resetToken,process.env.RESET_PASSWORD_KEY);
@@ -305,7 +305,7 @@ class UserController {
                     message:"User isn't found"
                 })
             }
-            await user.updateOne({password:generateMD5(password + process.env.SECRET_KEY),resetPassword:""});
+            await user.updateOne({password:generateMD5(password + process.env.SECRET_KEY)});
     
             res.status(201).json({
                 status:"success",

@@ -1,6 +1,7 @@
 import { Snackbar } from "@material-ui/core";
+import { PinDropSharp } from "@material-ui/icons";
 import Alert from "@material-ui/lab/Alert"
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type propsType = {
     children:JSX.Element
@@ -16,14 +17,13 @@ const OpenNotification:React.FC<propsType> = ({children}) => {
         setSeverityNotification(sev);
         setOpenNotification(bool)
     }
-
     return <>
         {React.Children.map(children, (child) => {
             return React.cloneElement(child as React.ReactElement<any>,{openNotificationWithSettings} as {
                 openNotificationWithSettings: (bool:boolean,msg:string,sev:"success" | "error") => void
             })
         })
-        }
+        } 
         <Snackbar open={open} autoHideDuration={3000} onClose={() => setOpenNotification(false)}>
             <Alert onClose={() => setOpenNotification(false)} severity={severity}>
                 {message}

@@ -11,6 +11,7 @@ import { compose } from 'redux';
 import Profile from './Components/Profile/Profile';
 import Friends from './Components/Friends/Friends';
 import Messages from './Components/Messages/Messages';
+import ResetPassword from './Components/ResetPassword/ResetPassword';
 
 
 
@@ -26,6 +27,7 @@ const App = () => {
         {isAuth && <Header />}
             <Switch>
                 <Route path = "/auth" exact render={() =>  <OpenNotification><Auth /></OpenNotification>}/>
+                <Route path = "/resetpassword/:token" render={() =>  <ResetPassword />}/>
                 <Route path = "/profile" exact render={() => <Profile />}/>
                 <Route path = "/friends" exact render={() => <Friends />}/>
                 <Route path = "/messages" exact render={() => <Messages />}/>

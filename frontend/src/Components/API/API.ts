@@ -1,7 +1,7 @@
 import { loginFormDataType, loginResponseDataType} from './../Redux/Reducers/authReducer';
 import axios from "axios";
 import { registrationFormDataType } from "../Redux/Reducers/authReducer";
-import { ErrorOutlineTwoTone } from '@material-ui/icons';
+import { AlternateEmailRounded, ErrorOutlineTwoTone } from '@material-ui/icons';
 
 
 let instance = axios.create({
@@ -46,5 +46,25 @@ export const authApi = {
         }).catch((e) => {
             return e.response
         })
+    },
+    forgotPassword: (email:string) => {
+        return instance.post('/users/fargotPassword',{email}).then((response) => {
+            return response.data
+        }).catch(e => {
+            return e.response
+        })
+    },
+    resetPassword: ({resetToken,password,password2}:resetPasswordAPIType) => {
+        return instance.post('/users/resetPassword',{resetToken,password,password2}).then((response) => {
+            return response.data
+        }).catch(e => {
+            return e.response.data
+        })
     }
 };
+
+type resetPasswordAPIType = {
+    resetToken:string,
+    password:string,
+    password2:string
+}
