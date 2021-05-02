@@ -9,14 +9,31 @@ const {deleteFile} = require("../utils/deleteFile")
 class UserController {
     async index(req, res) {
         try {
-            const users = await UserModel.find({}).exec();
+            const {pageNumber = 1,userNameSearch = ""} = req.query;
+            const pageSize = 10;
+            const totalUsersCount = await UserModel.countDocuments({username: {$regex: userNameSearch,$options: "i"}}).exec();
+            const totalPageCount = Math.ceil(totalUsersCount/pageSize);
+            let skip = (pageNumber - 1) * pageSize;
+            
+            if(pageNumber > totalPageCount) {
+                skip = (totalPageCount - 1) * pageSize;
+            }
+            if(skip < 0) {
+                skip = totalPageCount * pageSize
+            }
+            const limit = parseInt(pageSize);
+            const users = await UserModel.find({username: {$regex: userNameSearch,$options: "i"}}).limit(limit).skip(skip).exec();
 
             res.json({
                 status: "success",
-                data: users
+                data: {
+                    users,
+                    totalPageCount
+                }
             })
 
         } catch (e) {
+            console.log(e)
             res.status(500).json({
                 status: 'error',
                 message: JSON.stringify(e)
@@ -58,7 +75,6 @@ class UserController {
     async create(req, res) {
         try {
             const errors = validationResult(req);
-
             if (!errors.isEmpty()) {
                 res.status(400).json({status: "error", errors: errors.array()});
                 return;
@@ -70,7 +86,6 @@ class UserController {
                 password: generateMD5(req.body.password + process.env.SECRET_KEY),
                 confirmHash: generateMD5(process.env.SECRET_KEY || Math.random().toString())
             };
-
             const user = await UserModel.create(data);
 
             sendEmail({
@@ -95,6 +110,7 @@ class UserController {
 
 
         } catch (e) {
+            console.log(e)
             res.status(500).json({
                 status: 'error',
                 message: e
