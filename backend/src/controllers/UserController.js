@@ -10,7 +10,7 @@ class UserController {
     async index(req, res) {
         try {
             const {pageNumber = 1,userNameSearch = ""} = req.query;
-            const pageSize = 10;
+            const pageSize = 12;
             const totalUsersCount = await UserModel.countDocuments({username: {$regex: userNameSearch,$options: "i"}}).exec();
             const totalPageCount = Math.ceil(totalUsersCount/pageSize);
             let skip = (pageNumber - 1) * pageSize;
@@ -22,8 +22,7 @@ class UserController {
                 skip = totalPageCount * pageSize
             }
             const limit = parseInt(pageSize);
-            const users = await UserModel.find({username: {$regex: userNameSearch,$options: "i"}}).limit(limit).skip(skip).exec();
-
+            const users = await UserModel.find({username: {$regex: userNameSearch,$options: "i"}}).select(["-email","-confirmed"]).limit(limit).skip(skip).exec();
             res.json({
                 status: "success",
                 data: {

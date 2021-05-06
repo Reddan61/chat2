@@ -63,6 +63,17 @@ export const authApi = {
     }
 };
 
+
+export const usersAPI = {
+    getUsers: (page:string,search:string) => {
+        return instance.get(`/users?pageNumber=${page}&userNameSearch=${search}`).then((response) => {
+            return response.data
+        }).catch(e => {
+            return e.response.data
+        })
+    }
+}
+
 type resetPasswordAPIType = {
     resetToken:string,
     password:string,

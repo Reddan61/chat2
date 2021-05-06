@@ -45,7 +45,7 @@ return <React.Fragment>
                 className = {classes.menu}
             >
                 <MenuItem onClick={(e) => handleClose(e,"profile")}>Profile</MenuItem>
-                <MenuItem onClick={(e) => handleClose(e,"friends")}>Friends</MenuItem>
+                <MenuItem onClick={(e) => handleClose(e,"users")}>Users</MenuItem>
                 <MenuItem onClick={(e) => handleClose(e,"messages")}>Messages</MenuItem>
                 <MenuItem onClick={() => {dispatch(logOutThunk())}}>Logout</MenuItem>
             </Menu>
