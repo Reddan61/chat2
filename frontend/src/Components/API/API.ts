@@ -74,6 +74,26 @@ export const usersAPI = {
     }
 }
 
+export const messagesAPI = {
+    getRooms: (userId:string,token:string) => {
+        return instance.get(`/messages?id=${userId}`,{headers:{'token':token}}).then((response) => {
+            return response.data;
+        }).catch(e => {
+            return e.response.data
+        })
+    },
+    createRoom: (meId:string,userId:string,token:string) => {
+        return instance.post(`/messages`,{user1Id:meId,user2Id:userId},{headers:{'token': token}})
+        .then(response => response.data)
+        .catch( e => e.response.data)
+    },
+    getRoomById: (roomId:string,token:string) => {
+        return instance.post(`/messages/roomId`,{roomId},{headers:{'token': token}})
+        .then(response => response.data)
+        .catch( e => e.response.data)
+    }
+}
+
 type resetPasswordAPIType = {
     resetToken:string,
     password:string,

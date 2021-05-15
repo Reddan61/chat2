@@ -2,6 +2,7 @@ import { Box, Container, Grid } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux";
+import { WithAuth } from "../HOC/withAuth";
 import { getUsersThunk, IgetUsers } from "../Redux/Reducers/usersReducer";
 import { StateType } from "../Redux/store";
 import CardUser from "./CardUser";
@@ -69,4 +70,4 @@ const Users = () => {
 
 
 
-export default Users;
+export default WithAuth(Users);

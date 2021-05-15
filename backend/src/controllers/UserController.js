@@ -32,7 +32,6 @@ class UserController {
             })
 
         } catch (e) {
-            console.log(e)
             res.status(500).json({
                 status: 'error',
                 message: JSON.stringify(e)
@@ -109,7 +108,6 @@ class UserController {
 
 
         } catch (e) {
-            console.log(e)
             res.status(500).json({
                 status: 'error',
                 message: e

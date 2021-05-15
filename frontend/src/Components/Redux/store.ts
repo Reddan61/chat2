@@ -1,13 +1,15 @@
 import {combineReducers, applyMiddleware, createStore, Action} from "redux";
 import thunk, { ThunkAction } from "redux-thunk";
 import AuthReducer from "./Reducers/authReducer"
+import MessagesReducer from "./Reducers/messagesReducer";
 import UserReducer from "./Reducers/usersReducer";
 
 
 
 let reducers =combineReducers({
     AuthPage:AuthReducer,
-    UsersPage:UserReducer
+    UsersPage:UserReducer,
+    MessagesPage:MessagesReducer
 });
 
 

@@ -9,69 +9,69 @@ import { useDispatch } from "react-redux";
 import { logOutThunk } from "../Redux/Reducers/authReducer";
 
 const Header = () => {
-const classes = useStyles();
-const [anchorEl, setAnchorEl] = React.useState(null);
-const [title, setTitle] = useState<null | string>(null);
-const history = useHistory();
-const dispatch = useDispatch();
+    const classes = useStyles();
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [title, setTitle] = useState<null | string>(null);
+    const history = useHistory();
+    const dispatch = useDispatch();
 
-useEffect(() => {
-    const title = history.location.pathname[1].toUpperCase() + history.location.pathname.slice(2);
-    setTitle(title);
-});
+    useEffect(() => {
+        const title = history.location.pathname[1].toUpperCase() + history.location.pathname.slice(2);
+        setTitle(title);
+    });
 
 
-const handleClick = (event:any) => {
-    setAnchorEl(event.currentTarget);
-};
+    const handleClick = (event: any) => {
+        setAnchorEl(event.currentTarget);
+    };
 
-const handleClose = (e:any,path:string) => {
-    history.push(path);
-    setAnchorEl(null);
-};
+    const handleClose = (e: any, path: string) => {
+        if(path === "backdropClick") {setAnchorEl(null); return}
+        history.push(path);
+        setAnchorEl(null);
+    };
 
-return <React.Fragment>
-    <AppBar position="static">
-        <Toolbar>
-            <IconButton onClick = {handleClick} edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                <MenuIcon/>
-            </IconButton>
-            <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                keepMounted
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-                className = {classes.menu}
-            >
-                <MenuItem onClick={(e) => handleClose(e,"profile")}>Profile</MenuItem>
-                <MenuItem onClick={(e) => handleClose(e,"users")}>Users</MenuItem>
-                <MenuItem onClick={(e) => handleClose(e,"messages")}>Messages</MenuItem>
-                <MenuItem onClick={() => {dispatch(logOutThunk())}}>Logout</MenuItem>
-            </Menu>
-            <Typography variant="h6" className={classes.title}>
-               {title}
-            </Typography>
-        </Toolbar>
-    </AppBar>
-</React.Fragment>
+    return <React.Fragment>
+        <AppBar position="static">
+            <Toolbar>
+                <IconButton onClick={handleClick} edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                    <MenuIcon />
+                </IconButton>
+                <Menu
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                    className={classes.menu}
+                >
+                    <MenuItem onClick={(e) => handleClose(e, "profile")}>Profile</MenuItem>
+                    <MenuItem onClick={(e) => handleClose(e, "users")}>Users</MenuItem>
+                    <MenuItem onClick={(e) => handleClose(e, "messages")}>Messages</MenuItem>
+                    <MenuItem onClick={() => { dispatch(logOutThunk()) }}>Logout</MenuItem>
+                </Menu>
+                <Typography variant="h6" className={classes.title}>
+                    {title}
+                </Typography>
+            </Toolbar>
+        </AppBar>
+    </React.Fragment>
 }
 
 
 const useStyles = makeStyles((theme) => ({
     root: {
-      flexGrow: 1,
+        flexGrow: 1,
     },
     menu: {
         marginTop: "20px"
     },
     menuButton: {
-      marginRight: theme.spacing(2),
+        marginRight: theme.spacing(2),
     },
     title: {
-      flexGrow: 1,
+        flexGrow: 1,
     }
-  }));
+}));
 
 
 export default WithAuth(Header);

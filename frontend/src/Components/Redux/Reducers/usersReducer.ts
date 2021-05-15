@@ -47,7 +47,7 @@ export const getUsersThunk = ({page = "1",search = ""}: IgetUsers): ThunkActionT
             }
         }
         catch(e) {
-
+            console.log(e);
         }
     }
 }

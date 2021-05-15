@@ -1,6 +1,5 @@
 import { ActionsTypes, ThunkActionType } from './../store';
 import {authApi} from "../../API/API"
-import actions from 'redux-form/lib/actions';
 
 const registration = "REGISTRATION";
 const login = "LOGIN";

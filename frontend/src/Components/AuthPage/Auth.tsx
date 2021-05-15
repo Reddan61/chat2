@@ -1,8 +1,8 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link, makeStyles } from "@material-ui/core";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { renderTextField } from "../Formik/Fields/Fields";
 import { useDispatch, useSelector } from "react-redux";
-import { registrationThunk, loginThunk, registrationFormDataType, loginFormDataType } from "../Redux/Reducers/authReducer"
+import { registrationThunk, loginThunk, registrationFormDataType, loginFormDataType, isLoginnedThunk } from "../Redux/Reducers/authReducer"
 import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { StateType } from "../Redux/store";
@@ -12,6 +12,7 @@ import LoginForm from "./Login";
 import RegistrationForm from "./Register";
 import OpenNotification from "../openNotification/OpenNotification";
 import ForgotPassword from "./ForgotPassword";
+import Loader from "../Loader/Loader";
 
 const useStyle = makeStyles({
     root: {
@@ -32,12 +33,13 @@ type authPropsType = {
 }
 const Auth: React.FC<authPropsType> = (props) => {
     const { isAuth } = useSelector((state: StateType) => state.AuthPage);
-
+    const [isLoading,setLoading] = useState(true);
     const classes = useStyle();
-
+    const dispatch = useDispatch();
     const [isOpenedAuth, changeOpenAuth] = useState(false);
     const [isOpenedReg, changeOpenReg] = useState(false);
     const [isOpenForgotPassword, changeOpenForgotPassword] = useState(false);
+
     function openForgotPassword() {
         changeOpenForgotPassword(!isOpenForgotPassword)
     }
@@ -49,10 +51,22 @@ const Auth: React.FC<authPropsType> = (props) => {
     function openReg() {
         changeOpenReg(!isOpenedReg);
     }
-    if (isAuth) {
-        return <Redirect to={'/mainPage'} />
+   
+    async function checkAuth() {
+        setLoading(true);
+        await dispatch(isLoginnedThunk());
+        setLoading(false);
     }
+    useEffect(() => {
+        checkAuth();
+    },[])
 
+    if(isLoading) {
+        return <Loader />
+    }
+    if (isAuth) {
+        return <Redirect to={'/profile'} />
+    }
     return <React.Fragment>
         <Box className={classes.root}>
             {/*Авторизация*/}
