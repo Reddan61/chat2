@@ -1,5 +1,5 @@
 import { Avatar, Box, Card, CardContent,Typography } from "@material-ui/core";
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux";
 import { IMessage} from "../Redux/Reducers/messagesReducer";
 import { StateType } from "../Redux/store";
@@ -7,24 +7,35 @@ import { StateType } from "../Redux/store";
 
 const MessageCard: React.FC<{ message: IMessage,isFirst:boolean }> = (props) => {
     const { id } = useSelector((state: StateType) => state.AuthPage)
+    const refRoot = useRef<HTMLDivElement>(null);
+    const refWrapped = useRef<HTMLDivElement>(null);
     const message = props.message;
-    return  <Card style={{
+    useEffect(() => {
+        if(refRoot && refRoot.current && refWrapped && refWrapped.current) {
+            if(refRoot.current.clientHeight < refWrapped.current.offsetHeight ) {
+                refRoot.current.style.minHeight = String(refRoot.current.clientHeight + refWrapped.current.clientHeight - 45) + 'px';
+            }
+        }
+       
+        
+    },[])
+    return  <Card ref = {refRoot} style={{
         maxWidth:"350px",
         minWidth:"350px",
-        minHeight:"50px",
+        minHeight:"80px",
         alignSelf: message.userBy._id === id ? "flex-end" : "flex-start",
         margin:props.isFirst?'0':'10px 0 0'
     }}>
-        <MessageCardText message = {message}/>
+        <MessageCardText ref = {refWrapped} message = {message}/>
     </Card>
 }
 
 
 
 
-const MessageCardText: React.FC<{message:IMessage}> = (props) => {
+const MessageCardText = React.forwardRef<HTMLDivElement,{message:IMessage}>((props,ref) => {
     const [date,setDate] = useState('');
-    
+    const messageText = props.message.text;
     
     useEffect(() => {
         const msgDate = new Date(props.message.date);
@@ -42,9 +53,6 @@ const MessageCardText: React.FC<{message:IMessage}> = (props) => {
         }
     },[])
    
-  
-
-    const messageText = props.message.text;
     function splitText(text:string,lengthRow:number) {
         const arr = text.split('').map((el,index) => {
             if(!((index + 1) % lengthRow) && index !== 0) {
@@ -60,16 +68,14 @@ const MessageCardText: React.FC<{message:IMessage}> = (props) => {
         display:"flex"
     }}>
         <Avatar src = {props.message.userBy.avatar}/>
-        <Box style = {{
+        <div ref = {ref} style = {{
             marginLeft:"10px"
         }}>
             <Typography>{props.message.userBy.username} {date}</Typography>
-            <Typography style = {{
-                
-            }}>{splitText(messageText,30)}</Typography>
-        </Box>
+            <Typography>{splitText(messageText,30)}</Typography>
+        </div>
     </CardContent>
-}
+})
 
 
 
