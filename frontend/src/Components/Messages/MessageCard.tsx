@@ -1,6 +1,7 @@
 import { Avatar, Box, Card, CardContent,Typography } from "@material-ui/core";
 import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux";
+import { getAvatarSRC } from "../../Utils/getAvatarSrc";
 import { IMessage} from "../Redux/Reducers/messagesReducer";
 import { StateType } from "../Redux/store";
 
@@ -9,35 +10,12 @@ const MessageCard: React.FC<{ message: IMessage,isFirst:boolean }> = (props) => 
     const { id } = useSelector((state: StateType) => state.AuthPage)
     const refRoot = useRef<HTMLDivElement>(null);
     const refWrapped = useRef<HTMLDivElement>(null);
-    const message = props.message;
-    useEffect(() => {
-        if(refRoot && refRoot.current && refWrapped && refWrapped.current) {
-            if(refRoot.current.clientHeight < refWrapped.current.offsetHeight ) {
-                refRoot.current.style.minHeight = String(refRoot.current.clientHeight + refWrapped.current.clientHeight - 45) + 'px';
-            }
-        }
-       
-        
-    },[])
-    return  <Card ref = {refRoot} style={{
-        maxWidth:"350px",
-        minWidth:"350px",
-        minHeight:"80px",
-        alignSelf: message.userBy._id === id ? "flex-end" : "flex-start",
-        margin:props.isFirst?'0':'10px 0 0'
-    }}>
-        <MessageCardText ref = {refWrapped} message = {message}/>
-    </Card>
-}
-
-
-
-
-const MessageCardText = React.forwardRef<HTMLDivElement,{message:IMessage}>((props,ref) => {
     const [date,setDate] = useState('');
-    const messageText = props.message.text;
-    
     useEffect(() => {
+        if(refRoot && refRoot.current && refWrapped && refWrapped.current) {     
+            refRoot.current.style.minHeight = String(refWrapped.current.clientHeight) + 'px';    
+        }
+
         const msgDate = new Date(props.message.date);
         const hours = msgDate.getHours().toString().length === 1?'0'+msgDate.getHours():msgDate.getHours();
         const minutes = msgDate.getMinutes().toString().length === 1 ? '0' + msgDate.getMinutes():msgDate.getMinutes();
@@ -47,12 +25,13 @@ const MessageCardText = React.forwardRef<HTMLDivElement,{message:IMessage}>((pro
         if(msgDate.valueOf() < today) {
             const month = msgDate.getMonth().toString().length === 1?'0'+msgDate.getMonth():msgDate.getMonth();
             const year = msgDate.getFullYear();
-            setDate(date + " " + year +":"+month);
+            setDate(year +":"+month);
         } else {
             setDate(hours + ":" + minutes);
         }
+        
     },[])
-   
+
     function splitText(text:string,lengthRow:number) {
         const arr = text.split('').map((el,index) => {
             if(!((index + 1) % lengthRow) && index !== 0) {
@@ -62,21 +41,41 @@ const MessageCardText = React.forwardRef<HTMLDivElement,{message:IMessage}>((pro
         });
         return arr.join('');
     }
-
-    return <CardContent style={{
-        paddingBottom: "10px",
-        display:"flex"
+    return  <Card ref = {refRoot} variant="outlined" style={{
+        maxWidth:"350px",
+        minWidth:"350px",
+        minHeight:"80px",
+        alignSelf: props.message.userBy._id === id ? "flex-end" : "flex-start",
+        margin:props.isFirst?'0':'10px 0 0'
     }}>
-        <Avatar src = {props.message.userBy.avatar}/>
-        <div ref = {ref} style = {{
-            marginLeft:"10px"
+        <CardContent  ref = {refWrapped} style={{
+            paddingBottom: "10px",
+            display:"flex"
         }}>
-            <Typography>{props.message.userBy.username} {date}</Typography>
-            <Typography>{splitText(messageText,30)}</Typography>
-        </div>
-    </CardContent>
-})
+            <Avatar src = {props.message.userBy.avatar}/>
+            <div style = {{
+                marginLeft:"10px"
+            }}>
+                <Typography>{props.message.userBy.username} {date}</Typography>
+                <Typography>{splitText(props.message.text,30)}</Typography>
+                <Box style = {{
+                    padding:'10px 0 0 0',
+                    display:'flex',
+                    flexWrap:"wrap",
+                    maxWidth:'200px'
+                }}>
+                    {props.message.imagesSrc.map((el,index) => <img style = {{
+                        minWidth:"100px",
+                        maxWidth:"100px",
+                        minHeight:"100px",
+                        maxHeight:"100px"
+                    }} key = {String(el + index)} src = {getAvatarSRC(el)} alt = {"img"}/>)}
+                </Box>
+            </div>
+        </CardContent>
+    </Card>
+}
 
 
 
-export default MessageCard;
+export default React.memo(MessageCard);

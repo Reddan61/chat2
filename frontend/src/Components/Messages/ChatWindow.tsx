@@ -10,14 +10,7 @@ import ChatMessagesRoom from "./ChatMessagesRoom";
 const ChatWindow:React.FC<{}> = (props) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const myRef = useRef<HTMLDivElement>(null);
     
-
-    useEffect(() => {
-        if (myRef && myRef.current) {
-            myRef.current.scrollTop = myRef.current.scrollHeight;
-        }
-    },[])
 
     return  <Container className = {classes.root}>
     <Box style = {{
@@ -31,7 +24,7 @@ const ChatWindow:React.FC<{}> = (props) => {
         }}
         />
     </Box>
-    <ChatMessagesRoom ref = {myRef}/>
+    <ChatMessagesRoom />
     <ChatBottom />
 </Container>
 }

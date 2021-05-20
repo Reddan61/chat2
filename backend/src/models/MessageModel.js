@@ -17,6 +17,9 @@ const MessageSchema = new Schema({
         date: {
             type: String
         },
+        imagesSrc: [{
+            type:String
+        }],
         require:false
     }]
 });

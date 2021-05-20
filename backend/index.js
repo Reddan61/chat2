@@ -10,11 +10,13 @@ const {UserCtrl} = require("./src/controllers/UserController");
 const {MessageCtrl} = require("./src/controllers/MessageController");
 const {passport} = require("./src/core/passport")
 const {MessageModel} = require("./src/models/MessageModel")
+const {uploadFile} = require('./src/utils/uploadFile')
 const cors = require('cors');
 const multer = require('./src/core/multer')
 const app = express();
 const http = require('http').createServer(app);
 const jwt = require('jsonwebtoken');
+
 const io = require("socket.io")(http,{
     cors: {
       origin: "http://localhost:3000",
@@ -68,17 +70,29 @@ io.on('connection', (socket) => {
     socket.join(id);
     //ОШИБКИ СДЕЛАТЬ
     socket.on("SEND:MESSAGE", async (data) => {
+        const images = data.files
+        let imgSrc = [];
+        if(images && images.length <= 5) {
+            imgSrc = await uploadFile(images);
+        }
         const result = await MessageModel.findByIdAndUpdate(data.roomId,{
             $push: {
-                "messages": {userBy: data.userId,text:data.text,date:new Date()}
+                "messages": {userBy: data.userId,text:data.text,date:new Date(),imagesSrc:imgSrc}
             }
         }, {
             new: true,
             useFindAndModify:false
         }).populate('messages.userBy',['username','avatar'])
-        
+       
         const message = result.messages[result.messages.length - 1];
-        result.users.forEach(el => {
+        const uniqueUsers = result.users.reduce((unique,item) => {
+            if(unique.includes(String(item))) {
+                return unique
+            } else {
+                return [...unique, String(item)]
+            }
+        },[])
+        uniqueUsers.forEach(el => {
             io.sockets.to(el.toString()).emit("NEW:MESSAGE",{roomId:result._id,message})
         })
     })

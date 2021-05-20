@@ -22,8 +22,14 @@ const ChatBottom:React.FC<IProps> = (props) => {
 
 
     function sendMessage() {
-        socket.emit("SEND:MESSAGE",{userId:id,text,roomId:changedRoomId})
+        const files = new FormData();
+        changedFiles.forEach(el => {
+            files.append("file", el.file)
+        })
+        socket.emit("SEND:MESSAGE",{userId:id,text,roomId:changedRoomId,files:files.getAll('file')})
         setText('');
+        setChangedImage([]);
+        setChangedFiles([]);
     }
 
     function getImages(e:SyntheticEvent) {

@@ -1,14 +1,14 @@
 import {Container, Grid} from "@material-ui/core";
-import React, { MutableRefObject, Ref, useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux";
 import { WithAuth } from "../HOC/withAuth";
-import { addNewRoomThunk, getRoomsThunk, IMessage, IRoom, messagesReducerActions } from "../Redux/Reducers/messagesReducer";
+import { addNewRoomThunk, getRoomsThunk, IMessage, messagesReducerActions } from "../Redux/Reducers/messagesReducer";
 import store, { StateType } from "../Redux/store";
 import RoomCard from "./RoomCard";
 import Loader from "../Loader/Loader";
 import ChatWindow from "./ChatWindow";
-import { io } from "socket.io-client";
 import socket from "../../Utils/socket"
+
 
 
 

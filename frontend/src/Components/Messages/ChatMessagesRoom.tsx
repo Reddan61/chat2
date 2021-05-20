@@ -1,20 +1,40 @@
 import { makeStyles } from "@material-ui/core";
-import React from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux";
 import { StateType } from "../Redux/store";
 import MessageCard from "./MessageCard";
 
 
-const ChatMessagesRoom = React.forwardRef<HTMLDivElement>((props,ref) => {
+const ChatMessagesRoom = () => {
     const classes = useStyles();
     const { rooms, changedRoomId } = useSelector((state: StateType) => state.MessagesPage)
-
-    return <div ref={ref} className={classes.root}>
-        {
-            rooms?.filter((el) => el._id === changedRoomId ? true : false)[0].messages.map((el, index) => <MessageCard isFirst={index === 0} key={el.text + el.userBy + Math.random()} message={el} />)
+    const myRef = useRef<HTMLDivElement>(null);
+    const [heightListDiv,setHeight] = useState(0);
+    useEffect(() => {
+        if (myRef && myRef.current) {
+            setHeight(myRef.current.scrollHeight);
+            myRef.current.scrollTop = myRef.current.scrollHeight;
         }
+    },[])
+
+    useEffect(() => {
+        if (myRef && myRef.current) {
+            const heightNewMessage = myRef.current.scrollHeight - heightListDiv;
+            if(Math.floor(myRef.current.scrollHeight - myRef.current.scrollTop - heightNewMessage) <= myRef.current.clientHeight) {
+                myRef.current.scrollTop = myRef.current.scrollHeight;
+            }
+            setHeight(myRef.current.scrollHeight);
+        }
+    },[rooms])
+    const messages = rooms?.filter((el) => el._id === changedRoomId ? true : false)[0]
+    .messages.map(function(el, index){
+        return <MessageCard isFirst={index === 0} key={String(index + el.text + el.date)} message={el} />
+    })
+    
+    return <div ref={myRef} className={classes.root} id = {"list"}>
+        { messages }
     </div>
-})
+}
 
 const useStyles = makeStyles(() => ({
     root: {

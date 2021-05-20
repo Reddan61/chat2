@@ -25,6 +25,7 @@ export interface IMessage {
         username:string,
         avatar:string
     },
+    imagesSrc: Array<string>,
     text:string,
     date:string
 }
@@ -43,7 +44,7 @@ const MessagesReducer = (state:initialStateType = initialState,action:actionType
         case 'ADDMESSAGE': 
                 const rooms = state.rooms!.map(el => {
                     if(el._id === action.payload.roomId) {
-                        return {...el,messages: [...el.messages,action.payload.message ]}
+                        return {...el,messages:[...el.messages,action.payload.message ]}
                     }
                     return el
                 })
