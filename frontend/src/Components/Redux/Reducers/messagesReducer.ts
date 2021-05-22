@@ -26,7 +26,8 @@ export interface IMessage {
         avatar:string
     },
     imagesSrc: Array<string>,
-    text:string,
+    text:string | null,
+    audioSrc:string | null,
     date:string
 }
 

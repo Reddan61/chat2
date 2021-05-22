@@ -28,7 +28,7 @@ const ChatMessagesRoom = () => {
     },[rooms])
     const messages = rooms?.filter((el) => el._id === changedRoomId ? true : false)[0]
     .messages.map(function(el, index){
-        return <MessageCard isFirst={index === 0} key={String(index + el.text + el.date)} message={el} />
+        return <MessageCard isFirst={index === 0} key={String(index + el.date)} message={el} />
     })
     
     return <div ref={myRef} className={classes.root} id = {"list"}>

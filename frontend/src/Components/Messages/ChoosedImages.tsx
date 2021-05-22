@@ -11,7 +11,7 @@ const ChoosedImages:React.FC<IProps> = (props) => {
 
     return <Box style={{
         display: "flex",
-        margin:"10px 0 0 15px"
+        margin:"-10px 0 0"
     }}>
         {props.changedImages?.map(el => <Box key={el.id + Math.random() * 1000} style = {{
             position:"relative",

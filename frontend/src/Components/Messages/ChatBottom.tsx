@@ -1,11 +1,13 @@
 import { Box, Button, IconButton, makeStyles, TextField } from "@material-ui/core";
 import { PhotoCamera } from "@material-ui/icons";
-import React, { SyntheticEvent, useState } from "react"
+import React, { SyntheticEvent, useEffect, useRef, useState } from "react"
 import ChoosedImages from "./ChoosedImages";
 import socket from "../../Utils/socket";
 import { useSelector } from "react-redux";
 import { StateType } from "../Redux/store";
-
+import MicNoneIcon from '@material-ui/icons/MicNone';
+import StopIcon from '@material-ui/icons/Stop';
+import Recording from "../Recording/Recording";
 
 interface IProps {
   
@@ -19,17 +21,24 @@ const ChatBottom:React.FC<IProps> = (props) => {
     const [text,setText] = useState('');
     const {id} = useSelector((state:StateType) => state.AuthPage)
     const {changedRoomId} = useSelector((state:StateType) => state.MessagesPage)
+    const [isRecording,setRecording] = useState(false);
+    const stopButtonRef = useRef<HTMLDivElement>(null);
+    //const [audioUrl,setAudioUrl] = useState<string | null>(null)
 
-
-    function sendMessage() {
-        const files = new FormData();
-        changedFiles.forEach(el => {
-            files.append("file", el.file)
-        })
-        socket.emit("SEND:MESSAGE",{userId:id,text,roomId:changedRoomId,files:files.getAll('file')})
-        setText('');
-        setChangedImage([]);
-        setChangedFiles([]);
+    function sendTextMessage() {
+            const files = new FormData();
+            changedFiles.forEach(el => {
+                files.append("file", el.file)
+            })
+            socket.emit("SEND:MESSAGE",{userId:id,text,roomId:changedRoomId,files:files.getAll('file')})
+            setText('');
+            setChangedImage([]);
+            setChangedFiles([]);
+       
+    }
+    function sendAudio(file:File) {
+        socket.emit("SEND:MESSAGE/AUDIO",{userId:id,text,roomId:changedRoomId,file})
+        setRecording(!isRecording)
     }
 
     function getImages(e:SyntheticEvent) {
@@ -70,49 +79,113 @@ const ChatBottom:React.FC<IProps> = (props) => {
         setChangedFiles(files);
     };
 
+    async function startRecord() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && isRecording) {
+            setText('');
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            let chunks: BlobPart[] = [];
+            mediaRecorder.start();
+            mediaRecorder.ondataavailable = function(e) {
+                chunks.push(e.data);
+            }
+            mediaRecorder.onstop = function(e) {
+                //const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+                const file = new File(chunks,'audio.ogg', {type:"audio/ogg"})
+                chunks = [];
+                //const audioURL = window.URL.createObjectURL(blob);
+                sendAudio(file);
+            }
+            if(stopButtonRef && stopButtonRef.current) {
+                stopButtonRef.current.onclick = () => {
+                    mediaRecorder.stop();
+                }
+            }
+        }
+    }
+
+    useEffect(() => {
+        startRecord();
+    },[isRecording])
 
     return <Box className={classes.root}>
-    <Box style = {{
-        display:"flex",
-        flexDirection:"column"
-    }}>
-        <TextField multiline rowsMax={3} className = {classes.inputMessage}
-        value = {text}
-        onChange = {(e) => {
-            setText(e.target.value);
-        }}
-        />
+        <Box className = {classes.container}>
+            <Box className = {classes.inpustRoot}>
+                {!isRecording &&
+                <TextField multiline rowsMax={3} className = {classes.inputMessage}
+                disabled = {isRecording}
+                onKeyPress = {(e) => {
+                    const keyCode = e.code || e.key;
+                    if(keyCode == 'Enter' || keyCode == "NumpadEnter") {
+                        e.preventDefault();
+                        sendTextMessage();
+                    }
+                }}
+                value = {text}
+                onChange = {(e) => {
+                    setText(e.target.value);
+                }}
+                />
+                }
+                {isRecording && <Recording />}
+            </Box>
+            <Box>
+                <input accept="image/*" 
+                    multiple className={classes.inputPhoto} 
+                    id="icon-button-file" type="file" 
+                    onChange = {(e) => {
+                        getImages(e)
+                        e.target.value = '';
+                    }}
+                />
+                <label htmlFor="icon-button-file" className = {classes.photoIcon}>
+                    <IconButton color="primary" aria-label="upload picture" component="span">
+                        <PhotoCamera />
+                    </IconButton>
+                </label>
+            </Box>
+            <Box>
+                {!isRecording
+                ?
+                    <IconButton  onClick = {() => {
+                        setRecording(!isRecording);
+                    }} color="primary" aria-label="record voice" component="span">
+                        <MicNoneIcon />
+                    </IconButton>
+                :
+                <IconButton ref = {stopButtonRef} color="primary" aria-label="record voice" component="span">
+                    <StopIcon />
+                </IconButton>
+                }
+            </Box>
+        </Box>
         <ChoosedImages deleteImage = {deleteImage} changedImages = {changedImages}/>
-    </Box>
-    <Box>
-        <input accept="image/*" 
-            multiple className={classes.inputPhoto} 
-            id="icon-button-file" type="file" 
-            onChange = {(e) => {
-                getImages(e)
-                e.target.value = '';
-            }}
-        />
-        <label htmlFor="icon-button-file" className = {classes.photoIcon}>
-            <IconButton color="primary" aria-label="upload picture" component="span">
-                <PhotoCamera />
-            </IconButton>
-        </label>
-        <Button size = {"large"} color = {"primary"} onClick = {() => sendMessage()}> Send</Button>
-    </Box>
 </Box>
 }
 
 const useStyles = makeStyles(() => ({
     root: {
         display:"flex",
+        flexDirection:"column",
         width:"100%",
         alignItems:"flex-start",
         justifyContent:"flex-start",
-        margin:"20px 0 0"
+        margin:"20px 0 0",
+        padding:"0 0 0 15px"
+    },
+    container: {
+        display:"flex"
+    },
+    inpustRoot: {
+        display:"flex",
+        flexDirection:"column",
+        alignItems:"center",
+        justifyContent:"center"
     },
     inputMessage: {
-        marginLeft:"15px",
+        minWidth:"300px"
+    },
+    messageRoot: {
         minWidth:"300px"
     },
     photoIcon: {
@@ -120,7 +193,8 @@ const useStyles = makeStyles(() => ({
     },
     inputPhoto: {
         display: 'none'
-    }
+    },
+   
 }))
 
 export default ChatBottom;

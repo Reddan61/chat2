@@ -1,7 +1,7 @@
 import { Avatar, Box, Button, Container } from "@material-ui/core"
 import React from "react"
 import { useDispatch, useSelector } from "react-redux";
-import { getAvatarSRC } from "../../Utils/getAvatarSrc";
+import { getUploadsSRC } from "../../Utils/getUploadsSRC";
 import { WithAuth } from "../HOC/withAuth";
 import { updateAvatarThunk } from "../Redux/Reducers/authReducer";
 import { StateType } from "../Redux/store";
@@ -31,7 +31,7 @@ const Profile = () => {
                         justifyContent:"center",
                         alignItems:"center"
                     }}>
-                        <Avatar alt="Avatar" src={getAvatarSRC(avatarURL)} variant="rounded" style={{ width: "300px", height: "300px" }} />
+                        <Avatar alt="Avatar" src={getUploadsSRC(avatarURL)} variant="rounded" style={{ width: "300px", height: "300px" }} />
                         <input
                             accept="image/jpeg,image/png,image/jpg"
                             id="contained-button-file"

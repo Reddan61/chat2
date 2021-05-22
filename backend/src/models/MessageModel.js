@@ -13,13 +13,20 @@ const MessageSchema = new Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref:"User"
         },
-        text: String,
+        text: {
+            type:String || null,
+            default:null
+        },
         date: {
             type: String
         },
         imagesSrc: [{
             type:String
         }],
+        audioSrc:{
+            type:String || null,
+            default:null
+        },
         require:false
     }]
 });

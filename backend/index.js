@@ -11,6 +11,7 @@ const {MessageCtrl} = require("./src/controllers/MessageController");
 const {passport} = require("./src/core/passport")
 const {MessageModel} = require("./src/models/MessageModel")
 const {uploadFile} = require('./src/utils/uploadFile')
+const {uniqueArray} = require("./src/utils/uniqueArray");
 const cors = require('cors');
 const multer = require('./src/core/multer')
 const app = express();
@@ -74,6 +75,8 @@ io.on('connection', (socket) => {
         let imgSrc = [];
         if(images && images.length <= 5) {
             imgSrc = await uploadFile(images);
+        } else if(images.length > 5){
+            return
         }
         const result = await MessageModel.findByIdAndUpdate(data.roomId,{
             $push: {
@@ -85,13 +88,27 @@ io.on('connection', (socket) => {
         }).populate('messages.userBy',['username','avatar'])
        
         const message = result.messages[result.messages.length - 1];
-        const uniqueUsers = result.users.reduce((unique,item) => {
-            if(unique.includes(String(item))) {
-                return unique
-            } else {
-                return [...unique, String(item)]
+        const uniqueUsers = uniqueArray(result.users);
+        uniqueUsers.forEach(el => {
+            io.sockets.to(el.toString()).emit("NEW:MESSAGE",{roomId:result._id,message})
+        })
+    })
+    socket.on("SEND:MESSAGE/AUDIO",async (data) => {
+        const file = data.file;
+        let urlFile = null;
+        if(file) {
+            urlFile = await uploadFile([file]);
+        }
+        const result = await MessageModel.findByIdAndUpdate(data.roomId,{
+            $push: {
+                "messages": {userBy: data.userId,date:new Date(),audioSrc:urlFile[0]}
             }
-        },[])
+        }, {
+            new: true,
+            useFindAndModify:false
+        }).populate('messages.userBy',['username','avatar'])
+        const message = result.messages[result.messages.length - 1];
+        const uniqueUsers = uniqueArray(result.users);
         uniqueUsers.forEach(el => {
             io.sockets.to(el.toString()).emit("NEW:MESSAGE",{roomId:result._id,message})
         })

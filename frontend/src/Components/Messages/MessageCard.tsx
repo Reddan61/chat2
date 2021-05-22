@@ -1,7 +1,7 @@
 import { Avatar, Box, Card, CardContent,Typography } from "@material-ui/core";
 import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux";
-import { getAvatarSRC } from "../../Utils/getAvatarSrc";
+import { getUploadsSRC } from "../../Utils/getUploadsSRC";
 import { IMessage} from "../Redux/Reducers/messagesReducer";
 import { StateType } from "../Redux/store";
 
@@ -32,7 +32,10 @@ const MessageCard: React.FC<{ message: IMessage,isFirst:boolean }> = (props) => 
         
     },[])
 
-    function splitText(text:string,lengthRow:number) {
+    function splitText(text:string | null,lengthRow:number) {
+        if(!text) {
+            return ""
+        }
         const arr = text.split('').map((el,index) => {
             if(!((index + 1) % lengthRow) && index !== 0) {
                 return el + '\n'
@@ -52,26 +55,36 @@ const MessageCard: React.FC<{ message: IMessage,isFirst:boolean }> = (props) => 
             paddingBottom: "10px",
             display:"flex"
         }}>
-            <Avatar src = {props.message.userBy.avatar}/>
-            <div style = {{
-                marginLeft:"10px"
-            }}>
-                <Typography>{props.message.userBy.username} {date}</Typography>
-                <Typography>{splitText(props.message.text,30)}</Typography>
-                <Box style = {{
-                    padding:'10px 0 0 0',
-                    display:'flex',
-                    flexWrap:"wrap",
-                    maxWidth:'200px'
-                }}>
-                    {props.message.imagesSrc.map((el,index) => <img style = {{
-                        minWidth:"100px",
-                        maxWidth:"100px",
-                        minHeight:"100px",
-                        maxHeight:"100px"
-                    }} key = {String(el + index)} src = {getAvatarSRC(el)} alt = {"img"}/>)}
-                </Box>
-            </div>
+                    <Avatar src = {props.message.userBy.avatar}/>
+                    <div style = {{
+                        marginLeft:"10px"
+                    }}>
+                        <Typography>{props.message.userBy.username} {date}</Typography>
+                        {
+                        !props.message.audioSrc 
+                        ?
+                        <React.Fragment>
+                            <Typography>{splitText(props.message.text?props.message.text:null,30)}</Typography>
+                            <Box style = {{
+                                padding:'10px 0 0 0',
+                                display:'flex',
+                                flexWrap:"wrap",
+                                maxWidth:'200px'
+                            }}>
+                                {props.message.imagesSrc.map((el,index) => <img style = {{
+                                    minWidth:"100px",
+                                    maxWidth:"100px",
+                                    minHeight:"100px",
+                                    maxHeight:"100px"
+                                }} key = {String(el + index)} src = {getUploadsSRC(el)} alt = {"img"}/>)}
+                            </Box>
+                        </React.Fragment>
+                        :
+                        <React.Fragment>
+                            <audio src = {getUploadsSRC(props.message.audioSrc)} controls/>
+                        </React.Fragment>
+                        }
+                    </div>
         </CardContent>
     </Card>
 }
