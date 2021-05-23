@@ -69,49 +69,59 @@ app.get('/messages',passport.authenticate('jwt',{session:false}),  MessageCtrl.i
 io.on('connection', (socket) => {
     const id = socket.decoded.data._id;
     socket.join(id);
-    //ОШИБКИ СДЕЛАТЬ
     socket.on("SEND:MESSAGE", async (data) => {
-        const images = data.files
-        let imgSrc = [];
-        if(images && images.length <= 5) {
-            imgSrc = await uploadFile(images);
-        } else if(images.length > 5){
-            return
-        }
-        const result = await MessageModel.findByIdAndUpdate(data.roomId,{
-            $push: {
-                "messages": {userBy: data.userId,text:data.text,date:new Date(),imagesSrc:imgSrc}
+        try {
+            const images = data.files
+            let imgSrc = [];
+            if(images && images.length <= 5) {
+                imgSrc = await uploadFile(images);
+            } else if(images.length > 5){
+                return
             }
-        }, {
-            new: true,
-            useFindAndModify:false
-        }).populate('messages.userBy',['username','avatar'])
-       
-        const message = result.messages[result.messages.length - 1];
-        const uniqueUsers = uniqueArray(result.users);
-        uniqueUsers.forEach(el => {
-            io.sockets.to(el.toString()).emit("NEW:MESSAGE",{roomId:result._id,message})
-        })
+            const result = await MessageModel.findByIdAndUpdate(data.roomId,{
+                $push: {
+                    "messages": {userBy: data.userId,text:data.text,date:new Date(),imagesSrc:imgSrc}
+                }
+            }, {
+                new: true,
+                useFindAndModify:false
+            }).populate('messages.userBy',['username','avatar'])
+        
+            const message = result.messages[result.messages.length - 1];
+            const uniqueUsers = uniqueArray(result.users);
+            uniqueUsers.forEach(el => {
+                io.sockets.to(el.toString()).emit("NEW:MESSAGE",{roomId:result._id,message})
+            })
+        }
+        catch(e) {
+            console.log(e)
+        }
+        
     })
     socket.on("SEND:MESSAGE/AUDIO",async (data) => {
-        const file = data.file;
-        let urlFile = null;
-        if(file) {
-            urlFile = await uploadFile([file]);
-        }
-        const result = await MessageModel.findByIdAndUpdate(data.roomId,{
-            $push: {
-                "messages": {userBy: data.userId,date:new Date(),audioSrc:urlFile[0]}
+        try {
+            const file = data.file;
+            let urlFile = null;
+            if(file) {
+                urlFile = await uploadFile([file]);
             }
-        }, {
-            new: true,
-            useFindAndModify:false
-        }).populate('messages.userBy',['username','avatar'])
-        const message = result.messages[result.messages.length - 1];
-        const uniqueUsers = uniqueArray(result.users);
-        uniqueUsers.forEach(el => {
-            io.sockets.to(el.toString()).emit("NEW:MESSAGE",{roomId:result._id,message})
-        })
+            const result = await MessageModel.findByIdAndUpdate(data.roomId,{
+                $push: {
+                    "messages": {userBy: data.userId,date:new Date(),audioSrc:urlFile[0]}
+                }
+            }, {
+                new: true,
+                useFindAndModify:false
+            }).populate('messages.userBy',['username','avatar'])
+            const message = result.messages[result.messages.length - 1];
+            const uniqueUsers = uniqueArray(result.users);
+            uniqueUsers.forEach(el => {
+                io.sockets.to(el.toString()).emit("NEW:MESSAGE",{roomId:result._id,message})
+            })
+        }
+        catch(e){
+            console.log(e);
+        }
     })
     socket.on("disconnect", () => {
         console.log('disconected')

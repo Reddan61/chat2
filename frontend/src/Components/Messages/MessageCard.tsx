@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { getUploadsSRC } from "../../Utils/getUploadsSRC";
 import { IMessage} from "../Redux/Reducers/messagesReducer";
 import { StateType } from "../Redux/store";
+import AudioComponent from "./AudioComponent";
 
 
 const MessageCard: React.FC<{ message: IMessage,isFirst:boolean }> = (props) => {
@@ -79,10 +80,7 @@ const MessageCard: React.FC<{ message: IMessage,isFirst:boolean }> = (props) => 
                                 }} key = {String(el + index)} src = {getUploadsSRC(el)} alt = {"img"}/>)}
                             </Box>
                         </React.Fragment>
-                        :
-                        <React.Fragment>
-                            <audio src = {getUploadsSRC(props.message.audioSrc)} controls/>
-                        </React.Fragment>
+                        :<AudioComponent audio = {props.message.audioSrc}/>
                         }
                     </div>
         </CardContent>

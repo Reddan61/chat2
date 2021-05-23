@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, makeStyles, TextField } from "@material-ui/core";
+import { Box, IconButton, makeStyles, TextField } from "@material-ui/core";
 import { PhotoCamera } from "@material-ui/icons";
 import React, { SyntheticEvent, useEffect, useRef, useState } from "react"
 import ChoosedImages from "./ChoosedImages";
@@ -80,27 +80,33 @@ const ChatBottom:React.FC<IProps> = (props) => {
     };
 
     async function startRecord() {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && isRecording) {
-            setText('');
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream);
-            let chunks: BlobPart[] = [];
-            mediaRecorder.start();
-            mediaRecorder.ondataavailable = function(e) {
-                chunks.push(e.data);
-            }
-            mediaRecorder.onstop = function(e) {
-                //const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
-                const file = new File(chunks,'audio.ogg', {type:"audio/ogg"})
-                chunks = [];
-                //const audioURL = window.URL.createObjectURL(blob);
-                sendAudio(file);
-            }
-            if(stopButtonRef && stopButtonRef.current) {
-                stopButtonRef.current.onclick = () => {
-                    mediaRecorder.stop();
+        try{
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && isRecording) {
+                setText('');
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(e => {throw new Error});
+                const mediaRecorder = new MediaRecorder(stream);
+                let chunks: BlobPart[] = [];
+                mediaRecorder.start();
+                mediaRecorder.ondataavailable = function(e) {
+                    chunks.push(e.data);
+                }
+                mediaRecorder.onstop = function(e) {
+                    //const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+                    const file = new File(chunks,'audio.ogg', {type:"audio/ogg"})
+                    chunks = [];
+                    //const audioURL = window.URL.createObjectURL(blob);
+                    sendAudio(file);
+                }
+                if(stopButtonRef && stopButtonRef.current) {
+                    stopButtonRef.current.onclick = () => {
+                        mediaRecorder.stop();
+                    }
                 }
             }
+        }
+        catch(e){
+            setRecording(false);
+            alert("You didn't allow to use the microphone")
         }
     }
 
