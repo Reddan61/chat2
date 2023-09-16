@@ -1,37 +1,54 @@
-import { StateType } from './Components/Redux/store';
-import React, { Suspense } from "react";
-import Auth from "./Components/AuthPage/Auth";
-import Header from "./Components/Header/Header"
-import { Redirect, Route, Switch } from "react-router";
-import { useSelector } from "react-redux";
-import OpenNotification from './Components/openNotification/OpenNotification';
-import Profile from './Components/Profile/Profile';
-import Users from './Components/Users/Users';
-import ResetPassword from './Components/ResetPassword/ResetPassword';
-import Loader from './Components/Loader/Loader';
-
-
-const Messages = React.lazy(() => import('./Components/Messages/Messages'));
+import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Container } from "./Components/Container";
+import Profile from "./Pages/Profile";
+import Users from "./Pages/Users";
+import Rooms from "./Pages/Rooms";
+import Auth from "./Pages/AuthPage/Auth";
+import ResetPassword from "./Pages/ResetPassword/ResetPassword";
+import { useAuth } from "./hooks/useAuth";
+import { Room } from "./Pages/Room";
+import socket from "./Utils/socket";
 
 const App = () => {
-    const { isAuth } = useSelector((state: StateType) => state.AuthPage);
+  const [isLoading, setLoading] = useState(true);
+  const { isAuth, checkAuth } = useAuth();
 
-    return <React.Fragment>
-        {isAuth && <Header />}
-        <Suspense fallback={<Loader />}>
-            <Switch>
-                <Route path="/auth" exact render={() => <OpenNotification><Auth /></OpenNotification>} />
-                <Route path="/resetpassword/:token" render={() => <ResetPassword />} />
+  useEffect(() => {
+    (async () => {
+      await checkAuth();
+      setLoading(false);
+    })();
+  }, []);
 
-                <Route path="/profile" exact render={() => <Profile />} />
-                <Route path="/users" exact render={() => <Users />} />
-                <Route path="/messages" exact render={() => <Messages />} />
+  useEffect(() => {
+    if (isAuth) socket.connect();
 
+    return () => {
+      if (!isAuth) socket.disconnect();
+    };
+  }, [isAuth]);
 
-                <Route render={() => <Redirect to={'/profile'} />} />
-            </Switch>
-        </Suspense>
-    </React.Fragment>
-}
+  if (isLoading) {
+    return null;
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<Container />}>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/rooms" element={<Rooms />} />
+        <Route path="/rooms/:id" element={<Room />} />
+        <Route index element={<Navigate to={"/profile"} />} />
+      </Route>
+
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/resetpassword/:token" element={<ResetPassword />} />
+
+      <Route path="*" element={<Navigate to="/auth" />} />
+    </Routes>
+  );
+};
 
 export default App;
