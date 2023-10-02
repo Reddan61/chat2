@@ -6,7 +6,7 @@ const options = {
     auth: {
         user: process.env.NODEMAILER_USER,
         pass: process.env.NODEMAILER_PASS
-    }
+    },
 };
 
 const mailer = nodemailer.createTransport(options);
